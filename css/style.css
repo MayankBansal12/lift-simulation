@@ -105,7 +105,6 @@ body {
     background-color: rgba(176, 196, 222, 0.651);
     display: flex;
     overflow: hidden;
-    transition: all 1.5s ease-in-out;
 }
 
 .left-door {
