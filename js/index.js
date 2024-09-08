@@ -10,27 +10,71 @@ const data = {
 }
 
 // open lifts door
-function openDoor() {
-    let liftEl = document.getElementById("lift-1")
+function openDoor(liftNo) {
+    let liftEl = document.getElementById(`lift-${liftNo}`)
     let leftDoorEl = liftEl.querySelector(".left-door")
     let rightDoorEl = liftEl.querySelector(".right-door")
 
     leftDoorEl.style.transform = "translateX(-100%)"
     rightDoorEl.style.transform = "translateX(100%)"
 
-    setTimeout(closeDoor, 2500)
+    setTimeout(() => closeDoor(liftNo), 2500)
 }
 
 // close lifts door
-function closeDoor() {
-    let liftEl = document.getElementById("lift-1")
+function closeDoor(liftNo) {
+    let liftEl = document.getElementById(`lift-${liftNo}`)
     let leftDoorEl = liftEl.querySelector(".left-door")
     let rightDoorEl = liftEl.querySelector(".right-door")
 
     leftDoorEl.style.transform = "translateX(0%)"
     rightDoorEl.style.transform = "translateX(0%)"
 
-    setTimeout(() => data.lifts[0].isMoving = false, 2500)
+    // wait for 2s before moving to another floor
+    setTimeout(() => {
+        data.lifts[liftNo - 1].isMoving = false
+
+        processQueue()
+    }, 2000)
+}
+
+// check available lifts
+function availableLift(floorNo, direction) {
+    let allAvailableLifts = data.lifts.filter(lift => lift.isMoving === false)
+    let minDistance = Number.MAX_VALUE;
+    let currentLift = null;
+
+    console.log("available lifts: ", allAvailableLifts, " for floorNo: ", floorNo)
+
+    if (allAvailableLifts && allAvailableLifts.length > 0) {
+        allAvailableLifts.forEach(lift => {
+            let calculatedDis = Math.abs(lift.currentFloor - floorNo);
+
+            if (calculatedDis < minDistance) {
+                minDistance = calculatedDis;
+                currentLift = lift;
+            }
+        })
+        return currentLift.no;
+    } else {
+        data.queue.push({ floorNo, direction })
+    }
+}
+
+// check for queue and move lift accordingly
+function processQueue() {
+    if (data.queue.length <= 0) return
+    console.log("Queue: ", data.queue, " floors: ", data.floors)
+
+    data.queue.forEach(() => {
+        process = data.queue.shift()
+
+        const floor = data.floors.find(floor => floor.no === process.floorNo)
+        floor.isUp = false
+        floor.isDown = false
+
+        moveLift(process.floorNo, process.direction)
+    })
 }
 
 // add floor and lift
@@ -75,6 +119,12 @@ function addFloor(floorNo, liftNo) {
                             <h2 class="">floor ${no}</h2>`
         }
 
+        data.floors.push({
+            no: no,
+            isUp: false,
+            isDown: false
+        })
+
         newDiv.appendChild(floorBtnDiv)
 
         // place lifts in first floor intially
@@ -89,12 +139,13 @@ function addFloor(floorNo, liftNo) {
                         </p>`
 
                 data.lifts.push({
-                    liftNo: lift,
+                    no: lift,
                     currentFloor: 1,
                     direction: 1,
                     isMoving: false
                 })
             }
+            console.log("Lifts: ", liftNo, " available lifts: ", data.lifts)
 
             newDiv.appendChild(floorLiftsDiv)
         }
@@ -109,21 +160,34 @@ function addFloor(floorNo, liftNo) {
 
 // move lift using the queue
 function moveLift(floorNo, direction) {
-    let liftEl = document.getElementById(`lift-1`)
-    let distance = Math.abs(floorNo - data.lifts[0].currentFloor);
-    console.log("move lift dis:", distance, " floor: ", floorNo)
+    const floor = data.floors.find(floor => floor.no === floorNo)
 
-    let isLiftMoving = data.lifts[0].isMoving;
-    if (isLiftMoving) {
+    if (direction === 1 && !floor.isUp) {
+        floor.isUp = true;
+    }
+    else if (direction === -1 && !floor.isDown) {
+        floor.isDown = true;
+    } else {
         return;
     }
+
+    let liftNo = availableLift(floorNo, direction)
+
+    console.log("available lift:", liftNo)
+    if (!liftNo) {
+        return;
+    }
+    let liftEl = document.getElementById(`lift-${liftNo}`);
+
+    let distance = Math.abs(floorNo - data.lifts[0].currentFloor);
+    console.log("move lift dis:", distance, " floor: ", floorNo)
 
     data.lifts[0].isMoving = true
     liftEl.style.transform = `translateY(calc(-134.5% * ${floorNo - 1}))`
     liftEl.style.transition = `all ${distance * 2}s ease-in-out`
 
     setTimeout(() => {
-        openDoor();
+        openDoor(liftNo);
 
         data.lifts[0].currentFloor = floorNo
     }, `${distance * 2 * 1000}`)
@@ -153,7 +217,7 @@ function createFloorAndLift(e) {
 
     bodyEl.removeChild(inputEl)
 
-    addFloor(floorVal, liftVal)
+    addFloor(Number(floorVal), Number(liftVal))
 }
 
 inputEl.addEventListener("submit", createFloorAndLift)
