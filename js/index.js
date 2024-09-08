@@ -10,20 +10,20 @@ const data = {
 }
 
 // open lifts door
-function openDoor(liftNo) {
-    let liftEl = document.getElementById(`lift-${liftNo}`)
+function openDoor(lift) {
+    let liftEl = document.getElementById(`lift-${lift.no}`)
     let leftDoorEl = liftEl.querySelector(".left-door")
     let rightDoorEl = liftEl.querySelector(".right-door")
 
     leftDoorEl.style.transform = "translateX(-100%)"
     rightDoorEl.style.transform = "translateX(100%)"
 
-    setTimeout(() => closeDoor(liftNo), 2500)
+    setTimeout(() => closeDoor(lift), 2500)
 }
 
 // close lifts door
-function closeDoor(liftNo) {
-    let liftEl = document.getElementById(`lift-${liftNo}`)
+function closeDoor(lift) {
+    let liftEl = document.getElementById(`lift-${lift.no}`)
     let leftDoorEl = liftEl.querySelector(".left-door")
     let rightDoorEl = liftEl.querySelector(".right-door")
 
@@ -32,7 +32,14 @@ function closeDoor(liftNo) {
 
     // wait for 2s before moving to another floor
     setTimeout(() => {
-        data.lifts[liftNo - 1].isMoving = false
+        data.lifts[lift.no - 1].isMoving = false
+
+        const floor = data.floors.find(floor => floor.no === data.lifts[lift.no - 1].currentFloor)
+        if (lift.direction === 1) {
+            floor.isUp = false
+        } else if (lift.direction === -1) {
+            floor.isDown = false
+        }
 
         processQueue()
     }, 2000)
@@ -179,17 +186,18 @@ function moveLift(floorNo, direction) {
     }
     let liftEl = document.getElementById(`lift-${liftNo}`);
 
-    let distance = Math.abs(floorNo - data.lifts[0].currentFloor);
+    let distance = Math.abs(floorNo - data.lifts[liftNo - 1].currentFloor);
     console.log("move lift dis:", distance, " floor: ", floorNo)
 
-    data.lifts[0].isMoving = true
+    data.lifts[liftNo - 1].isMoving = true
+    data.lifts[liftNo - 1].direction = direction
     liftEl.style.transform = `translateY(calc(-134.5% * ${floorNo - 1}))`
     liftEl.style.transition = `all ${distance * 2}s ease-in-out`
 
     setTimeout(() => {
-        openDoor(liftNo);
+        openDoor(data.lifts[liftNo - 1]);
 
-        data.lifts[0].currentFloor = floorNo
+        data.lifts[liftNo - 1].currentFloor = floorNo
     }, `${distance * 2 * 1000}`)
 }
 
