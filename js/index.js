@@ -192,7 +192,7 @@ function moveLift(floorNo, direction) {
     data.lifts[liftNo - 1].isMoving = true
     data.lifts[liftNo - 1].direction = direction
     liftEl.style.transform = `translateY(calc(-134.5% * ${floorNo - 1}))`
-    liftEl.style.transition = `all ${distance * 2}s ease-in-out`
+    liftEl.style.transition = `all ${distance * 2}s linear`
 
     setTimeout(() => {
         openDoor(data.lifts[liftNo - 1]);

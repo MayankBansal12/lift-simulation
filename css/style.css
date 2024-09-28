@@ -113,7 +113,7 @@ body {
     display: block;
     background-color: silver;
     border: 1px solid black;
-    transition: all 1.5s ease-in-out;
+    transition: all 2.5s ease-in-out;
 }
 
 .right-door {
@@ -122,5 +122,5 @@ body {
     display: block;
     background-color: silver;
     border: 1px solid black;
-    transition: transform 1.5s ease-in-out, background-color 1.5s ease-in-out;
+    transition: all 2.5s ease-in-out;
 }
