@@ -30,7 +30,6 @@ function closeDoor(lift) {
     leftDoorEl.style.transform = "translateX(0%)"
     rightDoorEl.style.transform = "translateX(0%)"
 
-    // wait for 2s before moving to another floor
     setTimeout(() => {
         data.lifts[lift.no - 1].isMoving = false
 
@@ -42,7 +41,7 @@ function closeDoor(lift) {
         }
 
         processQueue()
-    }, 2000)
+    }, 3000)
 }
 
 // check available lifts
@@ -71,7 +70,6 @@ function availableLift(floorNo, direction) {
 // check for queue and move lift accordingly
 function processQueue() {
     if (data.queue.length <= 0) return
-    console.log("Queue: ", data.queue, " floors: ", data.floors)
 
     data.queue.forEach(() => {
         process = data.queue.shift()
@@ -152,7 +150,6 @@ function addFloor(floorNo, liftNo) {
                     isMoving: false
                 })
             }
-            console.log("Lifts: ", liftNo, " available lifts: ", data.lifts)
 
             newDiv.appendChild(floorLiftsDiv)
         }
